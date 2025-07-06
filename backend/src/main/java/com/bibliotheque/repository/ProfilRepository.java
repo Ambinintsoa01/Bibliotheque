@@ -1,5 +1,6 @@
 package com.bibliotheque.repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,4 +22,11 @@ public interface ProfilRepository extends JpaRepository<Profil, Long> {
     List<Profil> findByNomOrPrenom(@Param("nom") String nom, @Param("prenom") String prenom);
     
     boolean existsByEmail(String email);
+    
+    // Méthodes pour les statistiques détaillées
+    @Query("SELECT COUNT(p) FROM Profil p WHERE p.dateInscription BETWEEN :startDate AND :endDate")
+    Long countByDateInscriptionBetween(@Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+    
+    @Query("SELECT a.type.type, COUNT(p) FROM Profil p JOIN p.adherant a GROUP BY a.type.type ORDER BY COUNT(p) DESC")
+    List<Object[]> findUserDistributionByType();
 }
