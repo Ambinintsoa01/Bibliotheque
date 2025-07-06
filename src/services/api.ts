@@ -240,7 +240,15 @@ class ApiService {
       method: 'PUT',
       headers: this.getAuthHeaders(),
     });
-    return response.json();
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Erreur marquerPenalitePayee:', response.status, errorText);
+      throw new Error(`Erreur HTTP: ${response.status} - ${errorText}`);
+    }
+    
+    const text = await response.text();
+    return text ? JSON.parse(text) : {};
   }
 
   async annulerPenalite(penaliteId: number) {
@@ -248,7 +256,15 @@ class ApiService {
       method: 'PUT',
       headers: this.getAuthHeaders(),
     });
-    return response.json();
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Erreur annulerPenalite:', response.status, errorText);
+      throw new Error(`Erreur HTTP: ${response.status} - ${errorText}`);
+    }
+    
+    const text = await response.text();
+    return text ? JSON.parse(text) : {};
   }
 
   async getTotalPenalitesActives() {
@@ -282,37 +298,51 @@ class ApiService {
   }
 
   async getNotificationsByProfil(profilId: number) {
-    const response = await fetch(`${API_BASE_URL}/notifications/profil/${profilId}`, {
+    const response = await fetch(`${API_BASE_URL}/profils/notifications/profil/${profilId}`, {
       headers: this.getAuthHeaders(),
     });
     return response.json();
   }
 
   async marquerNotificationLue(notificationId: number) {
-    const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}/lue`, {
+    const response = await fetch(`${API_BASE_URL}/profils/notifications/${notificationId}/lue`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
     });
-    return response.json();
+    
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+    
+    // Si la réponse est vide, retourner un objet vide
+    const text = await response.text();
+    return text ? JSON.parse(text) : {};
   }
 
   async marquerToutesNotificationsLues(profilId: number) {
-    const response = await fetch(`${API_BASE_URL}/notifications/profil/${profilId}/toutes-lues`, {
+    const response = await fetch(`${API_BASE_URL}/profils/notifications/profil/${profilId}/toutes-lues`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
     });
-    return response.json();
+    
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+    
+    // Si la réponse est vide, retourner un objet vide
+    const text = await response.text();
+    return text ? JSON.parse(text) : {};
   }
 
   async getStats() {
-    const response = await fetch(`${API_BASE_URL}/stats`, {
+    const response = await fetch(`${API_BASE_URL}/stats/dashboard`, {
       headers: this.getAuthHeaders(),
     });
     return response.json();
   }
 
   async getActivitesRecentes() {
-    const response = await fetch(`${API_BASE_URL}/activites/recentes`, {
+    const response = await fetch(`${API_BASE_URL}/stats/activites-recentes`, {
       headers: this.getAuthHeaders(),
     });
     return response.json();
@@ -320,6 +350,13 @@ class ApiService {
 
   async getPretsParMois() {
     const response = await fetch(`${API_BASE_URL}/stats/prets-par-mois`, {
+      headers: this.getAuthHeaders(),
+    });
+    return response.json();
+  }
+
+  async getDetailedStatistics() {
+    const response = await fetch(`${API_BASE_URL}/stats/statistics`, {
       headers: this.getAuthHeaders(),
     });
     return response.json();
@@ -372,7 +409,17 @@ class ApiService {
     const response = await fetch(`${API_BASE_URL}/profils/notifications/all`, {
       headers: this.getAuthHeaders(),
     });
-    return response.json();
+    
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+    
+    try {
+      return await response.json();
+    } catch (error) {
+      console.error('Erreur lors du parsing de la réponse:', error);
+      throw new Error('Erreur lors du traitement de la réponse du serveur');
+    }
   }
 
   async getSettings() {
