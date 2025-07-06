@@ -1,19 +1,27 @@
 package com.bibliotheque.controllers;
 
-import com.bibliotheque.entities.Profil;
-import com.bibliotheque.entities.Pret;
-import com.bibliotheque.entities.Notification;
-import com.bibliotheque.services.ProfilService;
-import com.bibliotheque.services.PretService;
-import com.bibliotheque.services.NotificationService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.bibliotheque.entities.Notification;
+import com.bibliotheque.entities.Profil;
+import com.bibliotheque.services.NotificationService;
+import com.bibliotheque.services.PretService;
+import com.bibliotheque.services.ProfilService;
 
 @RestController
 @RequestMapping("/profils")
@@ -110,13 +118,59 @@ public class ProfilController {
     }
     
     @GetMapping("/notifications/all")
-    public ResponseEntity<List<Notification>> getAllNotifications() {
-        return ResponseEntity.ok(notificationService.getAllNotifications());
+    public ResponseEntity<List<Map<String, Object>>> getAllNotifications() {
+        try {
+            List<Notification> notifications = notificationService.getAllNotifications();
+            List<Map<String, Object>> response = notifications.stream()
+                    .map(this::convertNotificationToResponse)
+                    .toList();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(List.of(error));
+        }
     }
     
     @GetMapping("/notifications/profil/{profilId}")
-    public ResponseEntity<List<Notification>> getNotificationsByProfil(@PathVariable Long profilId) {
-        return ResponseEntity.ok(notificationService.getNotificationsByProfil(profilId));
+    public ResponseEntity<List<Map<String, Object>>> getNotificationsByProfil(@PathVariable Long profilId) {
+        List<Notification> notifications = notificationService.getNotificationsByProfil(profilId);
+        List<Map<String, Object>> response = notifications.stream()
+                .map(this::convertNotificationToResponse)
+                .toList();
+        return ResponseEntity.ok(response);
+    }
+    
+    @PutMapping("/notifications/{notificationId}/lue")
+    public ResponseEntity<?> marquerNotificationLue(@PathVariable Long notificationId) {
+        try {
+            notificationService.marquerCommeLue(notificationId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Notification marquée comme lue");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
+    
+    @PutMapping("/notifications/profil/{profilId}/toutes-lues")
+    public ResponseEntity<?> marquerToutesNotificationsLues(@PathVariable Long profilId) {
+        try {
+            notificationService.marquerToutesCommeLues(profilId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Toutes les notifications ont été marquées comme lues");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
     }
     
     private Map<String, Object> convertToResponse(Profil profil) {
@@ -129,6 +183,44 @@ public class ProfilController {
         response.put("dateInscription", profil.getDateInscription().toString());
         response.put("adherantType", profil.getAdherant().getType().getType());
         response.put("role", "client");
+        return response;
+    }
+    
+    private Map<String, Object> convertNotificationToResponse(Notification notification) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("id", notification.getNotificationId());
+        response.put("message", notification.getMessage());
+        response.put("dateEnvoi", notification.getDateEnvoi().toString());
+        
+        // Ajouter les informations du profil
+        if (notification.getProfil() != null) {
+            Map<String, Object> profil = new HashMap<>();
+            profil.put("id", notification.getProfil().getProfilId());
+            profil.put("nom", notification.getProfil().getNom());
+            profil.put("prenom", notification.getProfil().getPrenom());
+            profil.put("email", notification.getProfil().getEmail());
+            response.put("profil", profil);
+        }
+        
+        // Convertir le type de notification
+        String type = "Information";
+        if (notification.getNotificationType() != null) {
+            switch (notification.getNotificationType().getType()) {
+                case 0: type = "Rappel"; break;
+                case 1: type = "Penalite"; break;
+                case 2: type = "Disponibilite"; break;
+                default: type = "Information"; break;
+            }
+        }
+        response.put("type", type);
+        
+        // Convertir le statut de notification
+        String statut = "Non lu";
+        if (notification.getNotificationStatus() != null) {
+            statut = notification.getNotificationStatus().getStatut() == 0 ? "Non lu" : "Lu";
+        }
+        response.put("statut", statut);
+        
         return response;
     }
 } 

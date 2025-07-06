@@ -35,7 +35,7 @@ const ClientNotifications: React.FC = () => {
       loadNotifications(); // Recharger les notifications
     } catch (error) {
       console.error('Erreur lors du marquage comme lu:', error);
-      alert('Erreur lors du marquage comme lu');
+      alert(`Erreur lors du marquage comme lu: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
   };
 
@@ -47,7 +47,7 @@ const ClientNotifications: React.FC = () => {
       loadNotifications(); // Recharger les notifications
     } catch (error) {
       console.error('Erreur lors du marquage de toutes les notifications:', error);
-      alert('Erreur lors du marquage de toutes les notifications');
+      alert(`Erreur lors du marquage de toutes les notifications: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
   };
 
