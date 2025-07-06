@@ -57,7 +57,7 @@ const PenaltyManagement: React.FC = () => {
       loadTotals();
     } catch (error) {
       console.error('Erreur lors du marquage comme payée:', error);
-      alert('Erreur lors du marquage comme payée');
+      alert(`Erreur lors du marquage comme payée: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
   };
 
@@ -68,7 +68,7 @@ const PenaltyManagement: React.FC = () => {
       loadTotals();
     } catch (error) {
       console.error('Erreur lors de l\'annulation:', error);
-      alert('Erreur lors de l\'annulation');
+      alert(`Erreur lors de l'annulation: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
   };
 
