@@ -56,21 +56,18 @@ const AdminDashboard: React.FC = () => {
           value={stats.totalBooks}
           icon={BookOpen}
           color="blue"
-          trend={{ value: 5.2, isPositive: true }}
         />
         <StatsCard
           title="Utilisateurs Actifs"
           value={stats.totalUsers}
           icon={Users}
           color="green"
-          trend={{ value: 2.1, isPositive: true }}
         />
         <StatsCard
           title="Prêts Actifs"
           value={stats.activeLoans}
           icon={Calendar}
           color="yellow"
-          trend={{ value: -1.2, isPositive: false }}
         />
         <StatsCard
           title="Réservations en Attente"
@@ -83,11 +80,10 @@ const AdminDashboard: React.FC = () => {
           value={stats.overdueLoans}
           icon={AlertTriangle}
           color="red"
-          trend={{ value: -15.3, isPositive: true }}
         />
         <StatsCard
           title="Pénalités (€)"
-          value={stats.totalPenalties}
+          value={typeof stats.totalPenalties === 'number' ? stats.totalPenalties.toFixed(2) : stats.totalPenalties}
           icon={TrendingUp}
           color="blue"
         />
@@ -120,8 +116,11 @@ const AdminDashboard: React.FC = () => {
           <div className="h-64 flex items-end justify-between space-x-2">
             {pretsParMois.length > 0 ? (
               pretsParMois.map((mois: any, index: number) => (
-                <div key={index} className="flex-1 bg-blue-200 rounded-t" style={{ height: `${mois.pourcentage}%` }}>
-                  <div className="w-full bg-blue-600 rounded-t" style={{ height: '60%' }}></div>
+                <div key={index} className="flex-1 bg-blue-200 rounded-t relative" style={{ height: `${mois.pourcentage}%` }}>
+                  <div className="w-full bg-blue-600 rounded-t" style={{ height: '100%' }}></div>
+                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-600">
+                    {mois.count}
+                  </div>
                 </div>
               ))
             ) : (

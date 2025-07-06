@@ -1,17 +1,24 @@
 package com.bibliotheque.controllers;
 
-import com.bibliotheque.entities.Inscription;
-import com.bibliotheque.entities.TarifInscription;
-import com.bibliotheque.entities.InscriptionStatus;
-import com.bibliotheque.services.InscriptionService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.bibliotheque.entities.Inscription;
+import com.bibliotheque.entities.InscriptionStatus;
+import com.bibliotheque.entities.TarifInscription;
+import com.bibliotheque.services.InscriptionService;
 
 @RestController
 @RequestMapping("/inscriptions")
