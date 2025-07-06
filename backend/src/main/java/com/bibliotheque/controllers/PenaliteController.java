@@ -1,16 +1,22 @@
 package com.bibliotheque.controllers;
 
-import com.bibliotheque.entities.Penalite;
-import com.bibliotheque.repository.PenaliteRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.bibliotheque.entities.Penalite;
+import com.bibliotheque.repository.PenaliteRepository;
 
 @RestController
 @RequestMapping("/penalites")
@@ -126,10 +132,20 @@ public class PenaliteController {
     public ResponseEntity<?> marquerPenalitePayee(@PathVariable Long id) {
         try {
             Penalite penalite = penaliteRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Pénalité non trouvée"));
+                    .orElseThrow(() -> new RuntimeException("Pénalité non trouvée avec l'ID: " + id));
             
             if (penalite.getPenaliteStatus() == null) {
-                throw new RuntimeException("Statut de pénalité non trouvé");
+                throw new RuntimeException("Statut de pénalité non trouvé pour la pénalité ID: " + id);
+            }
+            
+            // Vérifier si la pénalité n'est pas déjà payée
+            if (penalite.getPenaliteStatus().getStatut() == 1) {
+                throw new RuntimeException("La pénalité est déjà marquée comme payée");
+            }
+            
+            // Vérifier si la pénalité n'est pas annulée
+            if (penalite.getPenaliteStatus().getStatut() == 2) {
+                throw new RuntimeException("Impossible de marquer une pénalité annulée comme payée");
             }
             
             penalite.getPenaliteStatus().setStatut(1); // 1 = Payée
@@ -140,7 +156,9 @@ public class PenaliteController {
             response.put("message", "Pénalité marquée comme payée");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            e.printStackTrace(); // Pour le debugging
             Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
             error.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(error);
         }
@@ -150,10 +168,20 @@ public class PenaliteController {
     public ResponseEntity<?> annulerPenalite(@PathVariable Long id) {
         try {
             Penalite penalite = penaliteRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Pénalité non trouvée"));
+                    .orElseThrow(() -> new RuntimeException("Pénalité non trouvée avec l'ID: " + id));
             
             if (penalite.getPenaliteStatus() == null) {
-                throw new RuntimeException("Statut de pénalité non trouvé");
+                throw new RuntimeException("Statut de pénalité non trouvé pour la pénalité ID: " + id);
+            }
+            
+            // Vérifier si la pénalité n'est pas déjà annulée
+            if (penalite.getPenaliteStatus().getStatut() == 2) {
+                throw new RuntimeException("La pénalité est déjà annulée");
+            }
+            
+            // Vérifier si la pénalité n'est pas déjà payée
+            if (penalite.getPenaliteStatus().getStatut() == 1) {
+                throw new RuntimeException("Impossible d'annuler une pénalité déjà payée");
             }
             
             penalite.getPenaliteStatus().setStatut(2); // 2 = Annulée
@@ -164,7 +192,9 @@ public class PenaliteController {
             response.put("message", "Pénalité annulée");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            e.printStackTrace(); // Pour le debugging
             Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
             error.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(error);
         }
